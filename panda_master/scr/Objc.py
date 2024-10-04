@@ -20,6 +20,10 @@ class Objects(pygame.sprite.Sprite):
         self.img = pygame.image.load(self.path)
         self.rect = self.img.get_rect()
 
+
+    def trun_x(self):
+        self.img = pygame.transform.flip(self.img, True, False)
+    
     
     def csiz(self):
         if self.siz:

@@ -1,6 +1,6 @@
-import pygame
-
-class Panda(pygame.sprite.Sprite):
-
-    def __init__(self):
-        pass
+ppap = []
+print(ppap)
+print(len(ppap))
+ppap.append(10)
+print(ppap)
+print(len(ppap))
