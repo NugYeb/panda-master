@@ -9,14 +9,17 @@ import random
 from Objc import Objects as obj
 from VGLN import Constant as con
 from pygame.locals import *
-# from timeloop import Timeloop
-# from datetime import timedelta
+from ComputeFunc import ComputeFunc as cf
 
 pygame.init()
 
 # 建立窗口
 wd = pygame.display.set_mode(con.DW_SIZ)
 
+# 建立计算模组
+computer = cf()
+
+# 图片资源路径
 padpath = '../pic/panda1.png'
 walpath = '../pic/wall1.png'
 oospath = ['../pic/Oor.png', 
@@ -35,16 +38,9 @@ speedoos = 200   # oos运动速度(-)
 speedadd = 17000 # oo的生成速度(-)
 
 # 构造可用的x位置坐标
-cutx = con.CUTx
-ndvo = 5
-pad_n = con.PAD_SIZ[0] - 5
-rl = [cutx[0]-(pad_n), 
-           cutx[1]+cutx[0]-ndvo, 
-           cutx[0]+cutx[1]+cutx[2]-pad_n, 
-           cutx[0]+cutx[1]+cutx[2]+cutx[3]-ndvo, 
-           cutx[0]+cutx[1]+cutx[2]+cutx[3]+cutx[4]-pad_n, 
-           cutx[0]+cutx[1]+cutx[2]+cutx[3]+cutx[4]+cutx[5]-ndvo, 
-           ]
+ndvo_pad, ndvo_oos = 5, 3
+rl_pad = computer.RightLeft_on_wall(con.PAD_SIZ[0], ndvo_pad)
+rl_oos = computer.RightLeft_on_wall(con.OOO_SIZ[0], ndvo_oos)
 
 pad = obj(padpath)  # 初始化panda
 wal = obj(walpath)  # 初始化竹子
@@ -52,13 +48,13 @@ oos, oosxs, oosys = [], [], []
 
 def addOo():
     tempoo = obj(random.choice(oospath))
-    ooxindex = random.randint(0, len(rl)-1)
-    tempoo.setinfo([rl[ooxindex], oosy0], con.OOO_SIZ)
+    ooxindex = random.randint(0, len(rl_oos)-1)
+    tempoo.setinfo([rl_oos[ooxindex], oosy0], con.OOO_SIZ)
     if ooxindex%2 != 0:
         tempoo.trun_x()
     oos.append(tempoo)
     oosys.append(oosy0)
-    oosxs.append(rl[ooxindex])
+    oosxs.append(rl_oos[ooxindex])
     print('the number of oos is' + ' ' + str(len(oos)))
     del tempoo
 
@@ -122,7 +118,7 @@ while True:
             pady -= 1
     if rrr:
         rrr = False
-        if padxindex < len(rl)-1:
+        if padxindex < len(rl_pad)-1:
             padxindex += 1
             pad.trun_x()
     if lll:
@@ -132,7 +128,7 @@ while True:
             pad.trun_x()
 
     # panda位置更新及显示
-    padx = rl[padxindex]
+    padx = rl_pad[padxindex]
     pad.setinfo([padx, pady], con.PAD_SIZ)
     pad.show(wd)
 
