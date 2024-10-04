@@ -26,13 +26,13 @@ oospath = ['../pic/Oor.png',
 
 ddd = uuu = rrr = lll = False
 
-pady, oosy = 0, con.DW_SIZ[1]    # 初始化panda和oos y位置坐标
+pady, oosy0 = 0, con.DW_SIZ[1]    # 初始化panda和oos y位置坐标
 pad_cy_temp = 0 # panda按键运动临界临时字
 oos_cy_temp = 0 # oos自运动临界临时字
 add_oo_temp = 0 # oo生成临界临时字
 speedpad = 20   # panda运动速度(-)
-speedoos = 500   # oos运动速度(-)
-speedadd = 20000 # oo的生成速度(-)
+speedoos = 200   # oos运动速度(-)
+speedadd = 17000 # oo的生成速度(-)
 
 # 构造可用的x位置坐标
 cutx = con.CUTx
@@ -53,11 +53,11 @@ oos, oosxs, oosys = [], [], []
 def addOo():
     tempoo = obj(random.choice(oospath))
     ooxindex = random.randint(0, len(rl)-1)
-    tempoo.setinfo([rl[ooxindex], oosy], con.OOO_SIZ)
+    tempoo.setinfo([rl[ooxindex], oosy0], con.OOO_SIZ)
     if ooxindex%2 != 0:
         tempoo.trun_x()
     oos.append(tempoo)
-    oosys.append(oosy)
+    oosys.append(oosy0)
     oosxs.append(rl[ooxindex])
     print('the number of oos is' + ' ' + str(len(oos)))
     del tempoo
@@ -145,6 +145,8 @@ while True:
     # oos自运动y位置更新及显示
     if len(oos) > 0:
         oos_cy_temp += 1
+        if oos[0].rect.y > oosy0+10 or oos[0].rect.y < -10:
+            oos.pop(0)
         if oos_cy_temp >= speedoos: # 设置出界判断(maybe)
             oos_cy_temp = 0
             for joj in range(len(oos)):
