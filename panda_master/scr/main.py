@@ -21,7 +21,10 @@ wd = pygame.display.set_mode(con.WD_SIZ)
 computer = cf()
 
 # 图片资源路径
-padpath = '../pic/panda1.png'
+padpath = ['../pic/panda1.png', 
+           '../pic/panda2.png', 
+           '../pic/panda3.png', 
+           '../pic/panda4.png', ]
 walpath = '../pic/wall1.png'
 oospath = ['../pic/Oor.png', 
            '../pic/Oob.png', 
@@ -29,6 +32,7 @@ oospath = ['../pic/Oor.png',
            '../pic/Ooo.png',]
 
 ddd = uuu = rrr = lll = False
+oddd= ddd   # 控制panda图片资源变化
 padlife = True
 
 pady, oosy0 = 0, con.WD_SIZ[1]    # 初始化panda和oos y位置坐标
@@ -36,17 +40,19 @@ pad_cy_temp = 0 # panda按键运动临界临时字
 oos_cy_temp = 0 # oos自运动临界临时字
 doo_cy_temp = 0 # 阵亡oos下落运动临界临时字
 add_oo_temp = 0 # oo生成临界临时字
+c_addoospeed_temp = 0 # 加快oo的生成速度的临界临时字
 speedpad = 20   # panda运动速度(-)
 speedoos = 200   # oos运动速度(-)
 speeddoo = speedpad-5 # doo下落速度(-)
 speedadd = 17000 # oo的生成速度(-)
+addoospeed = 200 # 加快oo生成速度的速度(-)
 
 # 构造可用的x位置坐标
 ndvo_pad, ndvo_oos = 5, 3
 rl_pad = computer.RightLeft_on_wall(con.PAD_SIZ[0], ndvo_pad)
 rl_oos = computer.RightLeft_on_wall(con.OOO_SIZ[0], ndvo_oos)
 
-pad = obj(padpath)  # 初始化panda
+pad = obj(padpath[0])  # 初始化panda
 wal = obj(walpath)  # 初始化竹子
 oos, oosxs, oosys, deadoos, doosxs, doosys = [], [], [], [], [], []
 
@@ -62,7 +68,6 @@ def addOo():
     print('the number of oos is' + ' ' + str(len(oos)))
     print('the number of deadoos is ' + str(len(deadoos)))
     del tempoo
-
 
 padxindex = 0  # panda的x位置索引
 
@@ -136,12 +141,22 @@ while True:
     # panda击杀模式判断
     if pady >= con.WAL_SIZ[1]-con.PAD_SIZ[1]:
         ddd = False
+    if oddd != ddd:
+        pad.cpic(padpath[(0 if padxindex%2 == 0 else 1) if not ddd else (2 if padxindex%2 == 0 else 3)])
+        oddd = ddd
     
     # panda位置更新及显示
     padx = rl_pad[padxindex]
     pad.setinfo([padx, pady], con.PAD_SIZ)
     pad.show(wd)
 
+    # oo生成加速
+    '''c_addoospeed_temp += 1
+    if c_addoospeed_temp >= addoospeed:
+        c_addoospeed_temp = 0
+        if speedadd > 200:
+            speedadd -= 100'''
+    
     # oo生成
     add_oo_temp += 1
     if add_oo_temp >= speedadd:

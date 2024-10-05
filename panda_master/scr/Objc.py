@@ -37,5 +37,13 @@ class oneObject(pygame.sprite.Sprite):
         self.rect.y = self.pos[1]
 
 
+    def cpic(self, npath:str):
+        # temprect = self.img.get_rect()
+        self.img = pygame.image.load(npath)
+        self.csiz()
+        self.cpos()
+
+
+
     def show(self, wd):
         wd.blit(self.img, self.rect)
