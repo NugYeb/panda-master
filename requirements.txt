@@ -1,0 +1,2 @@
+-e git+https://github.com/NugYeb/panda-master.git@08629669d02df63fd2017a8bf1b9a6f69a78767d#egg=panda_master
+pygame==2.6.1
