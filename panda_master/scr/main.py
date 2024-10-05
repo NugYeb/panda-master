@@ -6,7 +6,8 @@ import math
 import sys
 import gc
 import random
-from Objc import Objects as obj
+from Objc import oneObject as obj
+from Objcs import Objects as objs
 from VGLN import Constant as con
 from pygame.locals import *
 from ComputeFunc import ComputeFunc as cf
@@ -14,7 +15,7 @@ from ComputeFunc import ComputeFunc as cf
 pygame.init()
 
 # 建立窗口
-wd = pygame.display.set_mode(con.DW_SIZ)
+wd = pygame.display.set_mode(con.WD_SIZ)
 
 # 建立计算模组
 computer = cf()
@@ -28,13 +29,16 @@ oospath = ['../pic/Oor.png',
            '../pic/Ooo.png',]
 
 ddd = uuu = rrr = lll = False
+padlife = True
 
-pady, oosy0 = 0, con.DW_SIZ[1]    # 初始化panda和oos y位置坐标
+pady, oosy0 = 0, con.WD_SIZ[1]    # 初始化panda和oos y位置坐标
 pad_cy_temp = 0 # panda按键运动临界临时字
 oos_cy_temp = 0 # oos自运动临界临时字
+doo_cy_temp = 0 # 阵亡oos下落运动临界临时字
 add_oo_temp = 0 # oo生成临界临时字
 speedpad = 20   # panda运动速度(-)
 speedoos = 200   # oos运动速度(-)
+speeddoo = speedpad-5 # doo下落速度(-)
 speedadd = 17000 # oo的生成速度(-)
 
 # 构造可用的x位置坐标
@@ -44,7 +48,7 @@ rl_oos = computer.RightLeft_on_wall(con.OOO_SIZ[0], ndvo_oos)
 
 pad = obj(padpath)  # 初始化panda
 wal = obj(walpath)  # 初始化竹子
-oos, oosxs, oosys = [], [], []
+oos, oosxs, oosys, deadoos, doosxs, doosys = [], [], [], [], [], []
 
 def addOo():
     tempoo = obj(random.choice(oospath))
@@ -56,6 +60,7 @@ def addOo():
     oosys.append(oosy0)
     oosxs.append(rl_oos[ooxindex])
     print('the number of oos is' + ' ' + str(len(oos)))
+    print('the number of deadoos is ' + str(len(deadoos)))
     del tempoo
 
 
@@ -63,12 +68,14 @@ padxindex = 0  # panda的x位置索引
 
 while True:
     for EVENT in pygame.event.get():
+        # 点击退出
         if EVENT.type == QUIT:
             pygame.quit()
             sys.exit()
+        
+        # up down right left按键判断
         elif EVENT.type == KEYDOWN:
             key_name = pygame.key.name(EVENT.key)
-            # print("键盘按下：", EVENT.key, "对应的键名：", key_name)
             match key_name:
                 case 'down':
                     ddd = True
@@ -82,7 +89,6 @@ while True:
                     pass
         elif EVENT.type == KEYUP:
             key_name = pygame.key.name(EVENT.key)
-            # up down right left按键判断
             match key_name:
                 case 'down':
                     ddd = False
@@ -108,7 +114,7 @@ while True:
     # 按键控制panda位置判断
     if ddd:
         pad_cy_temp += 1
-        if pad_cy_temp >= speedpad and pady < con.WAL_SIZ[1]-con.PAD_SIZ[1]:
+        if pad_cy_temp >= speedpad: # and pady < con.WAL_SIZ[1]-con.PAD_SIZ[1]:
             pad_cy_temp = 0
             pady += 1
     if uuu:
@@ -127,6 +133,10 @@ while True:
             padxindex -= 1
             pad.trun_x()
 
+    # panda击杀模式判断
+    if pady >= con.WAL_SIZ[1]-con.PAD_SIZ[1]:
+        ddd = False
+    
     # panda位置更新及显示
     padx = rl_pad[padxindex]
     pad.setinfo([padx, pady], con.PAD_SIZ)
@@ -141,16 +151,36 @@ while True:
     # oos自运动y位置更新及显示
     if len(oos) > 0:
         oos_cy_temp += 1
-        if oos[0].rect.y > oosy0+10 or oos[0].rect.y < -10:
-            oos.pop(0)
-        if oos_cy_temp >= speedoos: # 设置出界判断(maybe)
+        if oos_cy_temp >= speedoos:     # 运动判断
             oos_cy_temp = 0
-            for joj in range(len(oos)):
-                oos[joj].setinfo([oos[joj].rect.x, oos[joj].rect.y-1])
-        for kok in range(len(oos)):
-            oos[kok].show(wd)
+            objs.litre(oos)
+        objs.if_out(oos, con.OOO_SIZ)   # Oos出界判断
+        objs.all_show(oos, wd)          # 显示
+
+    # doo下落运动y位置更新及显示    # _ # 同上
+    if len(deadoos) > 0:
+        doo_cy_temp += 1
+        if doo_cy_temp >= speeddoo:
+            doo_cy_temp = 0
+            objs.fall_(deadoos)
+        objs.if_out(deadoos, con.OOO_SIZ)
+        objs.all_show(deadoos, wd)
+
+    # 碰撞判断
+    # if len(oos) > 0:
+    for non in range(len(oos)):
+        tempoo = oos[non]
+        if pad.rect.colliderect(tempoo.rect):
+            if ddd:
+                deadoos.append(tempoo)
+                oos.pop(non)
+            else:
+                padlife = False
+            break
     
+    if not padlife:
+        print('you dead! ')
+        sys.exit()
 
     pygame.display.update()
-
     # gc.collect()

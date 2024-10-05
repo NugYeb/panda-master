@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 
-class Objects(pygame.sprite.Sprite):
+class oneObject(pygame.sprite.Sprite):
 
     def __init__(self, picpath):
         self.path = picpath
@@ -28,6 +28,8 @@ class Objects(pygame.sprite.Sprite):
     def csiz(self):
         if self.siz:
             self.img = pygame.transform.scale(self.img, self.siz)
+            self.rect.w = self.siz[0]
+            self.rect.h = self.siz[1]
 
 
     def cpos(self):

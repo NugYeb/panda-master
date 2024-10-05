@@ -1,5 +1,5 @@
 class Constant:
-    DW_SIZ = (240, 259)
+    WD_SIZ = (240, 259)
     PAD_SIZ = (20, 24) 
     # PAD_SIZ = (15, 17)
     WID_LINE = 30
