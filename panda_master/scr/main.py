@@ -12,7 +12,11 @@ from pygame.locals import *
 from threading import Timer
 from ComputeFunc import ComputeFunc as cf
 
+# 初始化, 初始化状态
 pygame.init()
+pygame.mixer.init()
+state = 0
+# 0: init; 1: start; 2: score
 
 # 建立窗口
 wd = pygame.display.set_mode(con.big_WD_SIZ)
@@ -80,6 +84,15 @@ def paddead():
     gc.collect()
     sys.exit()
 
+def state0():
+    
+    wd.fill((100, 200, 100))
+    # 得分文字显示
+    str0 = '按1以开始； 按2查看得分'
+    text0 = font.render(str0, True, (200, 255, 200))
+    wd.blit(text0, (0, 30))
+
+
 padxindex = 0  # panda的x位置索引
 
 while True:
@@ -90,7 +103,7 @@ while True:
             gc.collect()
             sys.exit()
 
-        # up down right left按键判断
+        # up down right left Space按键判断
         elif EVENT.type == KEYDOWN:
             key_name = pygame.key.name(EVENT.key)
             match key_name:
@@ -103,7 +116,14 @@ while True:
                 case 'left':
                     lll = True
                 case 'space':
-                    paused = not paused
+                    if state == 1:
+                        paused = not paused
+                case '1':
+                    if state == 0:
+                        state = 1
+                case '2':
+                    if state == 0:
+                        state = 2
                 case _:
                     pass
         elif EVENT.type == KEYUP:
@@ -122,106 +142,115 @@ while True:
                 case _:
                     pass
 
-    if not paused:
-        # 按键控制panda位置判断
-        if ddd:
-            pad_cy_temp += 1
-            if pad_cy_temp >= speedpad: # and pady < con.WAL_SIZ[1]-con.PAD_SIZ[1]:
-                pad_cy_temp = 0
-                pady += 1
-        if uuu:
-            pad_cy_temp += 1
-            if pad_cy_temp >= speedpad and pady > 0:
-                pad_cy_temp = 0
-                pady -= 1
-        if rrr:
-            rrr = False
-            if padxindex < len(rl_pad)-1:
-                padxindex += 1
-                pad.trun_x()
-        if lll:
-            lll = False
-            if padxindex > 0:
-                padxindex -= 1
-                pad.trun_x()
-
-        # panda击杀模式判断
-        if pady >= con.WAL_SIZ[1]-con.PAD_SIZ[1]:
-            ddd = False
-        if oddd != ddd:
-            pad.cpic(padpath[(0 if padxindex%2 == 0 else 1) if not ddd else (2 if padxindex%2 == 0 else 3)])
-            oddd = ddd
-
-        # oo生成加速
-        c_addoospeed_temp += 1
-        if c_addoospeed_temp >= addoospeed:
-            c_addoospeed_temp = 0
-            if speedadd > 2000:
-                speedadd -= 50
-        
-        # oo生成
-        add_oo_temp += 1
-        if add_oo_temp >= speedadd:
-            add_oo_temp = 0
-            addOo()
-
-        # 碰撞判断
-        for non in range(len(oos)):
-            tempoo = oos[non]
-            if pad.rect.colliderect(tempoo.rect):
+    match state:
+        case 0:
+            state0()
+        case 1:
+            if not paused:
+                # 按键控制panda位置判断
                 if ddd:
-                    deadoos.append(tempoo)
-                    oos.pop(non)
-                    score += 5
-                    killnum += 1
-                else:
-                    padlife = False
-                break
+                    pad_cy_temp += 1
+                    if pad_cy_temp >= speedpad: # and pady < con.WAL_SIZ[1]-con.PAD_SIZ[1]:
+                        pad_cy_temp = 0
+                        pady += 1
+                if uuu:
+                    pad_cy_temp += 1
+                    if pad_cy_temp >= speedpad and pady > 0:
+                        pad_cy_temp = 0
+                        pady -= 1
+                if rrr:
+                    rrr = False
+                    if padxindex < len(rl_pad)-1:
+                        padxindex += 1
+                        pad.trun_x()
+                if lll:
+                    lll = False
+                    if padxindex > 0:
+                        padxindex -= 1
+                        pad.trun_x()
 
-        # 背景更新显示
-        wd.fill((100, 200, 100))
+                # panda击杀模式判断
+                if pady >= con.WAL_SIZ[1]-con.PAD_SIZ[1]:
+                    ddd = False
+                if oddd != ddd:
+                    pad.cpic(padpath[(0 if padxindex%2 == 0 else 1) if not ddd else (2 if padxindex%2 == 0 else 3)])
+                    oddd = ddd
 
-        # 背景竹子显示更新
-        for ioi in con.Wal_x:
-            wal.setinfo([ioi, 0], con.WAL_SIZ)
-            wal.show(wd)
+                # oo生成加速
+                c_addoospeed_temp += 1
+                if c_addoospeed_temp >= addoospeed:
+                    c_addoospeed_temp = 0
+                    if speedadd > 2000:
+                        speedadd -= 50
+                
+                # oo生成
+                add_oo_temp += 1
+                if add_oo_temp >= speedadd:
+                    add_oo_temp = 0
+                    addOo()
 
-        # panda位置更新及显示
-        padx = rl_pad[padxindex]
-        pad.setinfo([padx, pady], con.PAD_SIZ)
-        pad.show(wd)
+                # 碰撞判断
+                for non in range(len(oos)):
+                    tempoo = oos[non]
+                    if pad.rect.colliderect(tempoo.rect):
+                        if ddd:
+                            deadoos.append(tempoo)
+                            oos.pop(non)
+                            score += 5
+                            killnum += 1
+                        else:
+                            padlife = False
+                        break
 
-        # oos自运动y位置更新及显示
-        if len(oos) > 0:
-            oos_cy_temp += 1
-            if oos_cy_temp >= speedoos:     # 运动判断
-                oos_cy_temp = 0
-                objs.litre(oos)
-            objs.if_out(oos, con.OOO_SIZ)   # Oos出界判断
-            objs.all_show(oos, wd)          # 显示
+                # 背景更新显示
+                wd.fill((100, 200, 100))
 
-        # doo下落运动y位置更新及显示    # _ # 同上
-        if len(deadoos) > 0:
-            doo_cy_temp += 1
-            if doo_cy_temp >= speeddoo:
-                doo_cy_temp = 0
-                objs.fall_(deadoos)
-            objs.if_out(deadoos, con.OOO_SIZ)
-            objs.all_show(deadoos, wd)
+                # 背景竹子显示更新
+                for ioi in con.Wal_x:
+                    wal.setinfo([ioi, 0], con.WAL_SIZ)
+                    wal.show(wd)
 
-        # 得分文字显示
-        str1 = '得分: ' + str(score) + '     已消灭: ' + str(killnum)
-        text1 = font.render(str1, True, (200, 255, 200))
-        wd.blit(text1, (30, con.WD_SIZ[1]-5))
+                # panda位置更新及显示
+                padx = rl_pad[padxindex]
+                pad.setinfo([padx, pady], con.PAD_SIZ)
+                pad.show(wd)
 
-        # panda死亡执行
-        if not padlife:
-            Timer(1.7, paddead(), ()).start
-    
-    else:
-        str2 = '已暂停, 按空格以继续'
-        text2 = font.render(str2, True, (255, 255, 255))
-        wd.blit(text2, (20, con.WD_SIZ[1]/2))
+                # oos自运动y位置更新及显示
+                if len(oos) > 0:
+                    oos_cy_temp += 1
+                    if oos_cy_temp >= speedoos:     # 运动判断
+                        oos_cy_temp = 0
+                        objs.litre(oos)
+                    objs.if_out(oos, con.OOO_SIZ)   # Oos出界判断
+                    objs.all_show(oos, wd)          # 显示
+
+                # doo下落运动y位置更新及显示    # _ # 同上
+                if len(deadoos) > 0:
+                    doo_cy_temp += 1
+                    if doo_cy_temp >= speeddoo:
+                        doo_cy_temp = 0
+                        objs.fall_(deadoos)
+                    objs.if_out(deadoos, con.OOO_SIZ)
+                    objs.all_show(deadoos, wd)
+
+                # 得分文字显示
+                str1 = '得分: ' + str(score) + '     已消灭: ' + str(killnum)
+                text1 = font.render(str1, True, (200, 255, 200))
+                wd.blit(text1, (30, con.WD_SIZ[1]-5))
+
+                # panda死亡执行
+                if not padlife:
+                    Timer(1.7, paddead(), ()).start
+            
+            else:
+                str2 = '已暂停, 按空格以继续'
+                text2 = font.render(str2, True, (255, 255, 255))
+                wd.blit(text2, (20, con.WD_SIZ[1]/2))
+                gc.collect()
+
+        case _:
+            pass
 
     pygame.display.update()
-    # gc.collect()
+
+
